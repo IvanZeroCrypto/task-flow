@@ -1,5 +1,7 @@
 package com.example.task_flow.auth;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +17,12 @@ import jakarta.persistence.EntityNotFoundException;
 public class AuthService{
 	private  final AuthRepository repository;
 	private final PasswordEncoder passwordEncoder;
+	private final AuthenticationManager authenticationManager;
 
-	public AuthService(AuthRepository repository,PasswordEncoder passwordEncoder){
+	public AuthService(AuthRepository repository,PasswordEncoder passwordEncoder,AuthenticationManager authenticationManager){
 		this.repository = repository;
 		this.passwordEncoder = passwordEncoder;
+		this.authenticationManager = authenticationManager;
 	}
 
 	public AuthRegisterResponse register(UserRegisterDTO request){
@@ -40,7 +44,11 @@ public class AuthService{
 		if(!repository.existsByEmail(request.email())){
 			throw new EntityNotFoundException("email not found in database");
 		}
-		return new AuthLoginResponse(request.email(),request.password());
+
+		authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(request.email(), request.password())
+        );
+		return new AuthLoginResponse("access-token-1234","refresh-token-5678");
 	}
 
 }
