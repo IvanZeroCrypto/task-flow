@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.task_flow.auth.dto.AuthLoginResponse;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
+import com.example.task_flow.auth.dto.UserLoginDTO;
 import com.example.task_flow.auth.dto.UserRegisterDTO;
 
 import jakarta.validation.Valid;
@@ -29,6 +31,12 @@ public class AuthController{
 		log.info("called register controller");
 		AuthRegisterResponse result = authService.register(dto);
 		return ResponseEntity.ok(result);
+	}
+
+	@PostMapping("/login")
+	public ResponseEntity<AuthLoginResponse> login(@RequestBody @Valid UserLoginDTO dto){
+		var result  = authService.login(dto);
+		return ResponseEntity.ok().body(result);
 	}
 
 }
