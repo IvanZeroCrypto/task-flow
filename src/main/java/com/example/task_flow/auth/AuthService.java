@@ -96,4 +96,11 @@ public class AuthService{
 		return new AuthTokensDTO(newAccessToken,null);
 	}
 
+	public void logout(String refreshToken){
+		if(!redisService.hasRefreshToken(refreshToken)){
+			throw new TokenValidationException("Невалидный или просроченный токен залогиньтесь заново");
+		}
+		redisService.deleteRefreshToken(refreshToken);
+	}
+
 	}

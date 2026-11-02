@@ -2,6 +2,7 @@ package com.example.task_flow.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,6 +79,28 @@ public class AuthController{
 		 }
 	 
 		return ResponseEntity.ok().body(new AuthAccessTokenResponse(result.accessToken()));
+	}
+
+    @PostMapping("/logout")
+	public ResponseEntity<Void> logout(
+		@CookieValue(name = "refresToken",required = false) String refreshToken	,
+		HttpServletResponse response 	
+	){
+		if(refreshToken == null || refreshToken.isEmpty()){
+			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
+		}
+
+		 authService.logout(refreshToken);
+
+		 Cookie refreshTokenCookie = new Cookie("refresToken",null);
+
+         refreshTokenCookie.setHttpOnly(true);
+	     refreshTokenCookie.setSecure(true);
+	     refreshTokenCookie.setPath("/api/auth");
+	     refreshTokenCookie.setMaxAge(0);
+	     response.addCookie(refreshTokenCookie);
+
+	     return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
 }
