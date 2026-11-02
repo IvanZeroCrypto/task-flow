@@ -8,15 +8,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.task_flow.auth.dto.AuthLoginResponse;
+import com.example.task_flow.auth.dto.AuthAccessTokenResponse;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
+import com.example.task_flow.auth.dto.AuthTokensDTO;
 import com.example.task_flow.auth.dto.UserLoginDTO;
 import com.example.task_flow.auth.dto.UserRegisterDTO;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 public class AuthController{
 
 	private static final Logger log = LoggerFactory.getLogger(AuthController.class);
@@ -34,9 +37,20 @@ public class AuthController{
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<AuthLoginResponse> login(@RequestBody @Valid UserLoginDTO dto){
-		var result  = authService.login(dto);
-		return ResponseEntity.ok().body(result);
+	public ResponseEntity<AuthAccessTokenResponse> login(@RequestBody @Valid UserLoginDTO dto , HttpServletResponse response ){
+	  AuthTokensDTO tokens  = authService.login(dto);
+
+	  Cookie refreshTokenCookie = new Cookie("refresToken", tokens.refreshToken());
+
+	  refreshTokenCookie.setHttpOnly(true);
+	  refreshTokenCookie.setSecure(true);
+	  refreshTokenCookie.setPath("/api/auth");
+	  refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+
+	  response.addCookie(refreshTokenCookie);
+      return ResponseEntity.ok().body(new AuthAccessTokenResponse(tokens.accessToken()));
 	}
+
+	
 
 }

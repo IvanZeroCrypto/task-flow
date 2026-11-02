@@ -1,15 +1,19 @@
 package com.example.task_flow.auth;
 
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.task_flow.auth.dto.AuthLoginResponse;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
+import com.example.task_flow.auth.dto.AuthTokensDTO;
 import com.example.task_flow.auth.dto.UserLoginDTO;
 import com.example.task_flow.auth.dto.UserRegisterDTO;
 import com.example.task_flow.common.exception.EmailAlreadyExistsException;
+import com.example.task_flow.infrastructure.redis.RedisService;
+import com.example.task_flow.security.JwtService;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -18,11 +22,20 @@ public class AuthService{
 	private  final AuthRepository repository;
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
+	private final JwtService jwtService;
+	private final RedisService redisService;
 
-	public AuthService(AuthRepository repository,PasswordEncoder passwordEncoder,AuthenticationManager authenticationManager){
+	public AuthService(AuthRepository repository,
+		PasswordEncoder passwordEncoder,
+		AuthenticationManager authenticationManager,
+		JwtService jwtService,
+    	RedisService redisService
+){
 		this.repository = repository;
 		this.passwordEncoder = passwordEncoder;
 		this.authenticationManager = authenticationManager;
+		this.jwtService = jwtService;
+		this.redisService = redisService;
 	}
 
 	public AuthRegisterResponse register(UserRegisterDTO request){
@@ -40,7 +53,7 @@ public class AuthService{
 		return new AuthRegisterResponse(savedUser.getId(),savedUser.getNickname(),savedUser.getEmail());
 	}
 
-	public AuthLoginResponse login(UserLoginDTO request){
+	public AuthTokensDTO login(UserLoginDTO request){
 		if(!repository.existsByEmail(request.email())){
 			throw new EntityNotFoundException("email not found in database");
 		}
@@ -48,7 +61,17 @@ public class AuthService{
 		authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
-		return new AuthLoginResponse("access-token-1234","refresh-token-5678");
+        User user = repository.findByEmail(request.email())
+            .orElseThrow(() -> new EntityNotFoundException("user not found by email = " + request.email()));
+
+        String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+        String refreshToken = UUID.randomUUID().toString();
+
+        redisService.saveRefreshToken(refreshToken,String.valueOf(user.getId()));
+
+		return new AuthTokensDTO(accessToken,refreshToken);
 	}
+
+	
 
 }

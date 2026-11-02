@@ -20,11 +20,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email)  {
-        // 1. Ищем твоего юзера в БД
+      
         User user = repository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
 
-        // 2. Оборачиваем в формат, понятный Security
+      
         return org.springframework.security.core.userdetails.User
             .withUsername(user.getEmail())
             .password(user.getPassword()) // ВАЖНО: хэш из БД

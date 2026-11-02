@@ -1,6 +1,6 @@
 package com.example.task_flow.auth.dto;
 
-public record AuthLoginResponse(
+public record AuthTokensDTO(
 	String accessToken,
 	String refreshToken
 ){}
