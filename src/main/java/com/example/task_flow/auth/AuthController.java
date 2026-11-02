@@ -3,6 +3,7 @@ package com.example.task_flow.auth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +14,7 @@ import com.example.task_flow.auth.dto.AuthRegisterResponse;
 import com.example.task_flow.auth.dto.AuthTokensDTO;
 import com.example.task_flow.auth.dto.UserLoginDTO;
 import com.example.task_flow.auth.dto.UserRegisterDTO;
+import com.example.task_flow.common.exception.TokenValidationException;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -51,6 +53,31 @@ public class AuthController{
       return ResponseEntity.ok().body(new AuthAccessTokenResponse(tokens.accessToken()));
 	}
 
-	
+
+    @PostMapping("/refresh")
+	public ResponseEntity<AuthAccessTokenResponse> refresh(
+		@CookieValue(name = "refresToken",required = false) String refreshToken,
+		HttpServletResponse response 
+	){
+
+		if(refreshToken == null || refreshToken.isEmpty()){
+			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
+		}
+
+		 AuthTokensDTO result  = authService.refresh(refreshToken);
+
+		 if(result.refreshToken() != null){
+		 	Cookie refreshTokenCookie = new Cookie("refresToken", result.refreshToken());
+
+	        refreshTokenCookie.setHttpOnly(true);
+	        refreshTokenCookie.setSecure(true);
+	        refreshTokenCookie.setPath("/api/auth");
+	        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60);
+
+	        response.addCookie(refreshTokenCookie);
+		 }
+	 
+		return ResponseEntity.ok().body(new AuthAccessTokenResponse(result.accessToken()));
+	}
 
 }

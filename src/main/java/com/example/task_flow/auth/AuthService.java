@@ -12,6 +12,7 @@ import com.example.task_flow.auth.dto.AuthTokensDTO;
 import com.example.task_flow.auth.dto.UserLoginDTO;
 import com.example.task_flow.auth.dto.UserRegisterDTO;
 import com.example.task_flow.common.exception.EmailAlreadyExistsException;
+import com.example.task_flow.common.exception.TokenValidationException;
 import com.example.task_flow.infrastructure.redis.RedisService;
 import com.example.task_flow.security.JwtService;
 
@@ -72,6 +73,27 @@ public class AuthService{
 		return new AuthTokensDTO(accessToken,refreshToken);
 	}
 
-	
+	public AuthTokensDTO refresh(String refreshToken){
+		if(!redisService.hasRefreshToken(refreshToken)){
+			throw new TokenValidationException("Невалидный или просроченный токен залогиньтесь заново");
+		}
 
-}
+		Long userId = redisService.getUserIdRefreshToken(refreshToken);
+
+		User user = repository.findById(userId).orElseThrow(() -> new  EntityNotFoundException("user not found"));
+
+		String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+
+		if(redisService.isExpiringRefresh(refreshToken, 1L)){
+			redisService.deleteRefreshToken(refreshToken);
+
+			String newRefreshToken = UUID.randomUUID().toString();
+
+			redisService.saveRefreshToken(newRefreshToken, String.valueOf(userId));
+
+			return new AuthTokensDTO(newAccessToken,newRefreshToken);
+		}
+		return new AuthTokensDTO(newAccessToken,null);
+	}
+
+	}

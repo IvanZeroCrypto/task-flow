@@ -1,6 +1,7 @@
 package com.example.task_flow.infrastructure.redis;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -58,14 +59,16 @@ public class RedisService{
         }   
       
     }
-     public boolean tokenTimeValid(String refreshToken,Long days) {
-        	Long timeToken = redisTemplate.getExpire(refreshToken);
-        	if(timeToken <= days){
-        		return false;
-        	}else {
-        		return true;
-        	}
-      
+  public boolean isExpiringRefresh(String refreshToken, long days) {
+    Long ttlSeconds = redisTemplate.getExpire(refreshToken, TimeUnit.SECONDS);
+
+  
+    if (ttlSeconds == null || ttlSeconds <= 0) {
+        return true; 
     }
+
+    long thresholdSeconds = TimeUnit.DAYS.toSeconds(days);
+    return ttlSeconds <= thresholdSeconds;
+}
 
 }
