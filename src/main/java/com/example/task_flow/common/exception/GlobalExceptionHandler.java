@@ -105,7 +105,6 @@ public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException
     body.put("error", "Malformed JSON");
     body.put("message", "Некорректный синтаксис JSON запроса. Проверьте закрывающие скобки, запятые и кавычки.");
   
-
     return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(body);
