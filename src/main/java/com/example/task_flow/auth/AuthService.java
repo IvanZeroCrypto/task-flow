@@ -75,26 +75,25 @@ public class AuthService{
 
 	public AuthTokensDTO refresh(String refreshToken){
 		if(!redisService.hasRefreshToken(refreshToken)){
-			throw new TokenValidationException("Невалидный или просроченный токен");
+			throw new TokenValidationException("Невалидный или просроченный токен залогиньтесь заново");
 		}
 
 		Long userId = redisService.getUserIdRefreshToken(refreshToken);
 
-		boolean isUpdateRefresh = false;
-		if(!redisService.tokenTimeValid(refreshToken, 1L)){
-			redisService.deleteRefreshToken(refreshToken);
-			refreshToken = UUID.randomUUID().toString();
-			redisService.saveRefreshToken(refreshToken,String.valueOf(userId));
-			isUpdateRefresh = true;
-		}
-
 		User user = repository.findById(userId).orElseThrow(() -> new  EntityNotFoundException("user not found"));
 
-        String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+		String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
 
-		return new AuthTokensDTO(accessToken,isUpdateRefresh ? refreshToken : "");
+		if(redisService.isExpiringRefresh(refreshToken, 1L)){
+			redisService.deleteRefreshToken(refreshToken);
+
+			String newRefreshToken = UUID.randomUUID().toString();
+
+			redisService.saveRefreshToken(newRefreshToken, String.valueOf(userId));
+
+			return new AuthTokensDTO(newAccessToken,newRefreshToken);
+		}
+		return new AuthTokensDTO(newAccessToken,null);
 	}
 
-	
-
-}
+	}

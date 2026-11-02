@@ -61,13 +61,13 @@ public class AuthController{
 	){
 
 		if(refreshToken == null || refreshToken.isEmpty()){
-			throw new  TokenValidationException("Refresh token отсутствует в куках");
+			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
 		}
 
-		 AuthTokensDTO tokens  = authService.refresh(refreshToken);
+		 AuthTokensDTO result  = authService.refresh(refreshToken);
 
-		 if(!tokens.refreshToken().isEmpty()){
-		 	Cookie refreshTokenCookie = new Cookie("refresToken", tokens.refreshToken());
+		 if(result.refreshToken() != null){
+		 	Cookie refreshTokenCookie = new Cookie("refresToken", result.refreshToken());
 
 	        refreshTokenCookie.setHttpOnly(true);
 	        refreshTokenCookie.setSecure(true);
@@ -77,7 +77,7 @@ public class AuthController{
 	        response.addCookie(refreshTokenCookie);
 		 }
 	 
-		return ResponseEntity.ok().body(new AuthAccessTokenResponse(tokens.accessToken()));
+		return ResponseEntity.ok().body(new AuthAccessTokenResponse(result.accessToken()));
 	}
 
 }
