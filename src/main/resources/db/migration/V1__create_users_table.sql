@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    nickname VARCHAR(20) NOT NULL CHECK (length(nickname) >= 3),
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(60) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
