@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 
-public record UserLoginDTO(
+public record AuthLoginDto(
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный формат email")
     @Size(max = 100, message = "Email слишком длинный")
