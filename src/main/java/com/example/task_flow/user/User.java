@@ -1,4 +1,4 @@
-package com.example.task_flow.auth;
+package com.example.task_flow.user;
 
 
 import java.time.LocalDateTime;

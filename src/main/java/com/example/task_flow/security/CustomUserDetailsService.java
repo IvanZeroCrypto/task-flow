@@ -7,8 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.task_flow.auth.AuthRepository;
-import com.example.task_flow.auth.User;
+import com.example.task_flow.user.User;
+import com.example.task_flow.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final AuthRepository repository;
+    private final UserRepository repository;
 
     @Override
     public UserDetails loadUserByUsername(String email)  {
@@ -27,8 +27,8 @@ public class CustomUserDetailsService implements UserDetailsService {
       
         return org.springframework.security.core.userdetails.User
             .withUsername(user.getEmail())
-            .password(user.getPassword()) // ВАЖНО: хэш из БД
-            .authorities(Collections.emptyList()) // Ролей нет — пустой список
+            .password(user.getPassword()) 
+            .authorities(Collections.emptyList()) 
             .build();
     }
 }

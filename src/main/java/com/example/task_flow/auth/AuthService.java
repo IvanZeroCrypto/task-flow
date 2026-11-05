@@ -7,26 +7,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.task_flow.auth.dto.AuthLoginDto;
+import com.example.task_flow.auth.dto.AuthRegisterDto;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
-import com.example.task_flow.auth.dto.AuthTokensDTO;
-import com.example.task_flow.auth.dto.UserLoginDTO;
-import com.example.task_flow.auth.dto.UserRegisterDTO;
+import com.example.task_flow.auth.dto.AuthTokensDto;
 import com.example.task_flow.common.exception.EmailAlreadyExistsException;
 import com.example.task_flow.common.exception.TokenValidationException;
 import com.example.task_flow.infrastructure.redis.RedisService;
 import com.example.task_flow.security.JwtService;
+import com.example.task_flow.user.User;
+import com.example.task_flow.user.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
 @Service 
 public class AuthService{
-	private  final AuthRepository repository;
+	private  final UserRepository repository;
 	private final PasswordEncoder passwordEncoder;
 	private final AuthenticationManager authenticationManager;
 	private final JwtService jwtService;
 	private final RedisService redisService;
 
-	public AuthService(AuthRepository repository,
+	public AuthService(UserRepository repository,
 		PasswordEncoder passwordEncoder,
 		AuthenticationManager authenticationManager,
 		JwtService jwtService,
@@ -39,7 +41,7 @@ public class AuthService{
 		this.redisService = redisService;
 	}
 
-	public AuthRegisterResponse register(UserRegisterDTO request){
+	public AuthRegisterResponse register(AuthRegisterDto request){
 		if(repository.existsByEmail(request.email())){
 			throw new EmailAlreadyExistsException(request.email());
 		}
@@ -54,7 +56,7 @@ public class AuthService{
 		return new AuthRegisterResponse(savedUser.getId(),savedUser.getNickname(),savedUser.getEmail());
 	}
 
-	public AuthTokensDTO login(UserLoginDTO request){
+	public AuthTokensDto login(AuthLoginDto request){
 		if(!repository.existsByEmail(request.email())){
 			throw new EntityNotFoundException("email not found in database");
 		}
@@ -70,10 +72,10 @@ public class AuthService{
 
         redisService.saveRefreshToken(refreshToken,String.valueOf(user.getId()));
 
-		return new AuthTokensDTO(accessToken,refreshToken);
+		return new AuthTokensDto(accessToken,refreshToken);
 	}
 
-	public AuthTokensDTO refresh(String refreshToken){
+	public AuthTokensDto refresh(String refreshToken){
 		if(!redisService.hasRefreshToken(refreshToken)){
 			throw new TokenValidationException("Невалидный или просроченный токен залогиньтесь заново");
 		}
@@ -91,9 +93,9 @@ public class AuthService{
 
 			redisService.saveRefreshToken(newRefreshToken, String.valueOf(userId));
 
-			return new AuthTokensDTO(newAccessToken,newRefreshToken);
+			return new AuthTokensDto(newAccessToken,newRefreshToken);
 		}
-		return new AuthTokensDTO(newAccessToken,null);
+		return new AuthTokensDto(newAccessToken,null);
 	}
 
 	public void logout(String refreshToken){

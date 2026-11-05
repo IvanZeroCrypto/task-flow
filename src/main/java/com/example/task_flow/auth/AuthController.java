@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.task_flow.auth.dto.AuthAccessTokenResponse;
+import com.example.task_flow.auth.dto.AuthLoginDto;
+import com.example.task_flow.auth.dto.AuthRegisterDto;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
-import com.example.task_flow.auth.dto.AuthTokensDTO;
-import com.example.task_flow.auth.dto.UserLoginDTO;
-import com.example.task_flow.auth.dto.UserRegisterDTO;
+import com.example.task_flow.auth.dto.AuthTokensDto;
+
 import com.example.task_flow.common.exception.TokenValidationException;
 
 import jakarta.servlet.http.Cookie;
@@ -33,15 +34,15 @@ public class AuthController{
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<AuthRegisterResponse> register(@RequestBody @Valid UserRegisterDTO dto){
+	public ResponseEntity<AuthRegisterResponse> register(@RequestBody @Valid AuthRegisterDto dto){
 		log.info("called register controller");
 		AuthRegisterResponse result = authService.register(dto);
 		return ResponseEntity.ok(result);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<AuthAccessTokenResponse> login(@RequestBody @Valid UserLoginDTO dto , HttpServletResponse response ){
-	  AuthTokensDTO tokens  = authService.login(dto);
+	public ResponseEntity<AuthAccessTokenResponse> login(@RequestBody @Valid AuthLoginDto dto , HttpServletResponse response ){
+	  AuthTokensDto tokens  = authService.login(dto);
 
 	  Cookie refreshTokenCookie = new Cookie("refresToken", tokens.refreshToken());
 
@@ -65,7 +66,7 @@ public class AuthController{
 			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
 		}
 
-		 AuthTokensDTO result  = authService.refresh(refreshToken);
+		 AuthTokensDto result  = authService.refresh(refreshToken);
 
 		 if(result.refreshToken() != null){
 		 	Cookie refreshTokenCookie = new Cookie("refresToken", result.refreshToken());
