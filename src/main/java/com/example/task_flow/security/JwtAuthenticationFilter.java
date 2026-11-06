@@ -10,6 +10,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.example.task_flow.infrastructure.redis.RedisService;
+
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor 
 public class JwtAuthenticationFilter extends  OncePerRequestFilter{
 	private final JwtService jwtService;
+    private final RedisService redisService;
+
 	private final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
 	@Override 
@@ -29,7 +34,7 @@ public class JwtAuthenticationFilter extends  OncePerRequestFilter{
         FilterChain filterChain
 	) throws ServletException, IOException{
 
-    		log.info("called filter auth");
+    log.info("called filter auth");
 
 
     String authHeader = request.getHeader("Authorization");
@@ -39,8 +44,19 @@ public class JwtAuthenticationFilter extends  OncePerRequestFilter{
     }
     String accessToken = authHeader.substring(7);
     try {
-    	    jwtService.isTokenValid(accessToken);
+    	    // jwtService.isTokenValid(accessToken);
     		log.info("accessToken success validate");
+
+            Claims claims = jwtService.extractAllClaims(accessToken);
+
+            if(redisService.isBlacklisted(claims.getId())){
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"error\":\"Token revoked\"}");
+                return;
+            }
+
     		String email = jwtService.extractEmail(accessToken);
     		Long userId = jwtService.extractUserId(accessToken);
 
@@ -49,7 +65,7 @@ public class JwtAuthenticationFilter extends  OncePerRequestFilter{
     			 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()
                     );
-    		authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    		authToken.setDetails(new JwtDetails(claims.getId(), claims.getExpiration()));
     		SecurityContextHolder.getContext().setAuthentication(authToken);
     		}
     	

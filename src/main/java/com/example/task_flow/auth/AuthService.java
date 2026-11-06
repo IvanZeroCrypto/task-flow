@@ -1,5 +1,6 @@
 package com.example.task_flow.auth;
 
+import java.util.Date;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -98,11 +99,16 @@ public class AuthService{
 		return new AuthTokensDto(newAccessToken,null);
 	}
 
-	public void logout(String refreshToken){
+	public void logout(String jti,Date expiration,String refreshToken){
 		if(!redisService.hasRefreshToken(refreshToken)){
 			throw new TokenValidationException("Невалидный или просроченный токен залогиньтесь заново");
 		}
 		redisService.deleteRefreshToken(refreshToken);
+		Long ttl = expiration.getTime() - System.currentTimeMillis();
+
+		if(ttl > 0){
+			redisService.saveBlackListAccess(jti, ttl);
+		}
 	}
 
 	}
