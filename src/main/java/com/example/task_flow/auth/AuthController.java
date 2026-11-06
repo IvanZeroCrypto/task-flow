@@ -96,10 +96,10 @@ public class AuthController{
 			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
 		}
 
-		  JwtDetails details = (JwtDetails) authentication.getDetails();
-          String jti = details.getJti();
-          Date expiration = details.getExpiration();
-          authService.logout(jti, expiration,refreshToken);
+		 JwtDetails details = (JwtDetails) authentication.getDetails();
+         String jti = details.getJti();
+         Date expiration = details.getExpiration();
+         authService.logout(jti, expiration,refreshToken);
 
 		 Cookie refreshTokenCookie = new Cookie("refresToken",null);
 
