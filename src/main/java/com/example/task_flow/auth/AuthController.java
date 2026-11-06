@@ -1,9 +1,12 @@
 package com.example.task_flow.auth;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +20,7 @@ import com.example.task_flow.auth.dto.AuthRegisterResponse;
 import com.example.task_flow.auth.dto.AuthTokensDto;
 
 import com.example.task_flow.common.exception.TokenValidationException;
+import com.example.task_flow.security.JwtDetails;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -85,13 +89,17 @@ public class AuthController{
     @PostMapping("/logout")
 	public ResponseEntity<Void> logout(
 		@CookieValue(name = "refresToken",required = false) String refreshToken	,
-		HttpServletResponse response 	
+		HttpServletResponse response,
+		Authentication authentication
 	){
 		if(refreshToken == null || refreshToken.isEmpty()){
 			throw new  TokenValidationException("Refresh token отсутствует в куках залогиньтесь заново");
 		}
 
-		 authService.logout(refreshToken);
+		  JwtDetails details = (JwtDetails) authentication.getDetails();
+          String jti = details.getJti();
+          Date expiration = details.getExpiration();
+          authService.logout(jti, expiration,refreshToken);
 
 		 Cookie refreshTokenCookie = new Cookie("refresToken",null);
 
@@ -103,5 +111,11 @@ public class AuthController{
 
 	     return ResponseEntity.status(HttpStatus.OK).build();
 	}
+	@PostMapping("/testes")
+	public ResponseEntity<String> tester(){
+		log.info("called register tester");
+		return ResponseEntity.ok().body("Вызвался testing endpoint");
+	}
+
 
 }

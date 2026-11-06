@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 public class RedisService{
 	public final StringRedisTemplate redisTemplate;
 	private final Duration refreshTokenDuration = Duration.ofDays(7);
+    private final String keyBlackList = "blacklist:";
 
     private static final Logger log = LoggerFactory.getLogger(RedisService.class);
 
@@ -59,6 +60,18 @@ public class RedisService{
         }   
       
     }
+
+     public boolean isBlacklisted(String idFromAccess) {
+          String key = keyBlackList + idFromAccess;
+        try {
+            return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+        } catch (RedisConnectionFailureException e) {
+        log.warn("Не удалось найти в blacklist запись");
+        return false;
+        }   
+      
+    }
+    
   public boolean isExpiringRefresh(String refreshToken, long days) {
     Long ttlSeconds = redisTemplate.getExpire(refreshToken, TimeUnit.SECONDS);
 
@@ -69,6 +82,19 @@ public class RedisService{
 
     long thresholdSeconds = TimeUnit.DAYS.toSeconds(days);
     return ttlSeconds <= thresholdSeconds;
+}
+
+    
+    public void saveBlackListAccess(String idFromAccess, Long ttl) {
+    String key = keyBlackList + idFromAccess;
+    try {
+    redisTemplate.opsForValue().set(key, 
+    "revoked", 
+    Duration.ofMillis(ttl));
+    } catch (RedisConnectionFailureException e) {
+        log.error("Не удалось сохранить accessToken в blacklist", e);
+        throw new RuntimeException("Сервис аутентификации временно недоступен", e);
+    }
 }
 
 }
