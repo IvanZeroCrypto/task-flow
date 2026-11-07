@@ -28,31 +28,32 @@ public class WorkspacesService{
 
 	@Transactional
 	public WorkspaceResponseDto createWorkspace(WorkSpaceRequestDto request){
-		var authentication = SecurityContextHolder.getContext().getAuthentication();
-		if(authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails){
-			Long userId = userDetails.getUserId();
+		CustomUserDetails userDetails = getRequiredUser();
+		
+		Long userId = userDetails.getUserId();
 
-			Workspaces workspaces = new Workspaces();
-			workspaces.setName(request.name());
-			workspaces.setOwner_id(userId);
-			Workspaces savedWorkspaces = workspacesRepository.save(workspaces);
+		Workspaces workspaces = new Workspaces();
+		workspaces.setName(request.name());
+		workspaces.setOwner_id(userId);
+		Workspaces savedWorkspaces = workspacesRepository.save(workspaces);
 
-			Memberships memberships = new Memberships();
-			memberships.setUserId(userId);
-			memberships.setWorkspace_id(savedWorkspaces.getId());
-			memberships.setRole(Role.OWNER);
-		    membershipsRepository.save(memberships);
+		Memberships memberships = new Memberships();
+		memberships.setUserId(userId);
+		memberships.setWorkspace_id(savedWorkspaces.getId());
+		memberships.setRole(Role.OWNER);
+		membershipsRepository.save(memberships);
 
-			return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwner_id(),workspaces.getCreatedAt());
-
-		} else {
-			throw new UnauthorizedException("Пользователь не авторизован");
-		}
+		return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwner_id(),workspaces.getCreatedAt());
 
 	}
 
-	
-
+	private CustomUserDetails getRequiredUser() {
+    var authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
+        return userDetails;
+    }
+    throw new IllegalStateException("Текущий пользователь не найден в SecurityContext");
+}
 
 	
 }
