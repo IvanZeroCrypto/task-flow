@@ -36,6 +36,18 @@ public class GlobalExceptionHandler{
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
 	}
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException e){
+        log.error("handleUnauthorized",e);
+
+        var errorDto = new ErrorResponseDTO(
+          "Пользватель не авторизован",
+          e.getMessage(),
+          LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDto);
+    }
+
 
 	@ExceptionHandler(EmailAlreadyExistsException.class)
 	public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExists(EmailAlreadyExistsException e){
