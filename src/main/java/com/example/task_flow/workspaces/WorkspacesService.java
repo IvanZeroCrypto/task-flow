@@ -1,6 +1,8 @@
 package com.example.task_flow.workspaces;
 
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.task_flow.common.enums.Role;
-import com.example.task_flow.common.exception.UnauthorizedException;
 import com.example.task_flow.memberships.Memberships;
 import com.example.task_flow.memberships.MembershipsRepository;
 import com.example.task_flow.security.CustomUserDetails;
@@ -29,7 +30,6 @@ public class WorkspacesService{
 	@Transactional
 	public WorkspaceResponseDto createWorkspace(WorkSpaceRequestDto request){
 		CustomUserDetails userDetails = getRequiredUser();
-		
 		Long userId = userDetails.getUserId();
 
 		Workspaces workspaces = new Workspaces();
@@ -46,6 +46,15 @@ public class WorkspacesService{
 		return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwner_id(),workspaces.getCreatedAt());
 
 	}
+
+
+    public List<WorkspaceResponseDto> getAllMyWorkspaces(){
+    	CustomUserDetails userDetails = getRequiredUser();
+		Long userId = userDetails.getUserId();
+
+    	List<Workspaces> workspaces = workspacesRepository.findMyWorkspaces(userId);
+    	return workspaces.stream().map(w -> new WorkspaceResponseDto(w.getId(),w.getName(),w.getOwner_id(),w.getCreatedAt())).toList();
+    }
 
 	private CustomUserDetails getRequiredUser() {
     var authentication = SecurityContextHolder.getContext().getAuthentication();
