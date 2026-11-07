@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -35,6 +36,29 @@ public class GlobalExceptionHandler{
 		);
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
 	}
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDataAccessException(DataAccessException e){
+
+        var errorDto = new ErrorResponseDTO(
+          "Ошибка при работе с базой данных, попробуйте позже",
+          e.getMessage(),
+          LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException e){
+        log.error("handleUnauthorized",e);
+
+        var errorDto = new ErrorResponseDTO(
+          "Пользватель не авторизован",
+          e.getMessage(),
+          LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDto);
+    }
 
 
 	@ExceptionHandler(EmailAlreadyExistsException.class)
