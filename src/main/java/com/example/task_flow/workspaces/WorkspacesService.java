@@ -5,64 +5,70 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.task_flow.common.enums.Role;
+import com.example.task_flow.common.exception.AccessDeniedException;
 import com.example.task_flow.memberships.Memberships;
 import com.example.task_flow.memberships.MembershipsRepository;
-import com.example.task_flow.security.CustomUserDetails;
+import com.example.task_flow.memberships.MembershipsService;
+import com.example.task_flow.security.SecurityUtils;
 import com.example.task_flow.workspaces.dto.WorkSpaceRequestDto;
 import com.example.task_flow.workspaces.dto.WorkspaceResponseDto;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service 
 public class WorkspacesService{
 	private static final Logger log = LoggerFactory.getLogger(WorkspacesService.class);
 	private final WorkspacesRepository workspacesRepository;
-	private final MembershipsRepository membershipsRepository;
+	private final MembershipsService membershipsService;
 
-	public WorkspacesService(WorkspacesRepository workspacesRepository,MembershipsRepository membershipsRepository){
+	public WorkspacesService(
+		WorkspacesRepository workspacesRepository,
+		MembershipsRepository membershipsRepository,
+		MembershipsService membershipsService
+	){
 		this.workspacesRepository = workspacesRepository;
-		this.membershipsRepository = membershipsRepository;
+		this.membershipsService = membershipsService;
 	}
 
 	@Transactional
 	public WorkspaceResponseDto createWorkspace(WorkSpaceRequestDto request){
-		CustomUserDetails userDetails = getRequiredUser();
-		Long userId = userDetails.getUserId();
+		Long userId = SecurityUtils.getRequiredUserId();
 
 		Workspaces workspaces = new Workspaces();
 		workspaces.setName(request.name());
-		workspaces.setOwner_id(userId);
+		workspaces.setOwnerId(userId);
 		Workspaces savedWorkspaces = workspacesRepository.save(workspaces);
 
-		Memberships memberships = new Memberships();
-		memberships.setUserId(userId);
-		memberships.setWorkspace_id(savedWorkspaces.getId());
-		memberships.setRole(Role.OWNER);
-		membershipsRepository.save(memberships);
+		membershipsService.addMember(userId, savedWorkspaces.getId(),Role.OWNER);
 
-		return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwner_id(),workspaces.getCreatedAt());
-
+		return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwnerId(),workspaces.getCreatedAt());
 	}
 
-
     public List<WorkspaceResponseDto> getAllMyWorkspaces(){
-    	CustomUserDetails userDetails = getRequiredUser();
-		Long userId = userDetails.getUserId();
+		Long userId = SecurityUtils.getRequiredUserId();
 
     	List<Workspaces> workspaces = workspacesRepository.findMyWorkspaces(userId);
-    	return workspaces.stream().map(w -> new WorkspaceResponseDto(w.getId(),w.getName(),w.getOwner_id(),w.getCreatedAt())).toList();
+    	return workspaces.stream().map(w -> new WorkspaceResponseDto(w.getId(),w.getName(),w.getOwnerId(),w.getCreatedAt())).toList();
     }
 
-	private CustomUserDetails getRequiredUser() {
-    var authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
-        return userDetails;
-    }
-    throw new IllegalStateException("Текущий пользователь не найден в SecurityContext");
-}
+    public WorkspaceResponseDto getByIdWorkspace(Long workspaceId){
+    	Long userId = SecurityUtils.getRequiredUserId();
+    	
+    	membershipsService.checkMember(userId, workspaceId);
 
+    	Workspaces workspace = workspacesRepository.findById(workspaceId)
+    	.orElseThrow(() -> new EntityNotFoundException("workspace не существует по id =" + workspaceId));
+    	return new WorkspaceResponseDto(workspace.getId(),workspace.getName(),workspace.getOwnerId(),workspace.getCreatedAt());
+    }
+
+     public void getDeleteByIdWorkspace(Long workspaceId){
+    	Long userId = SecurityUtils.getRequiredUserId();
+    	membershipsService.checkOwner(userId, workspaceId);
+    	workspacesRepository.deleteById(workspaceId);
+    }
 	
 }

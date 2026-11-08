@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,7 @@ import com.example.task_flow.workspaces.dto.WorkSpaceRequestDto;
 import com.example.task_flow.workspaces.dto.WorkspaceResponseDto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 @RestController 
 @RequestMapping("/api/workspaces")
@@ -42,8 +45,20 @@ public class WorkspacesController{
 
 	@GetMapping
 	public ResponseEntity<List<WorkspaceResponseDto>> getAllMyWorkspaces(){
-		List<WorkspaceResponseDto> results = workspacesService.getAllMyWorkspaces();
-		return ResponseEntity.ok().body(results);
+		List<WorkspaceResponseDto> workspaces = workspacesService.getAllMyWorkspaces();
+		return ResponseEntity.ok().body(workspaces);
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<WorkspaceResponseDto> getByIdWorspace(@PathVariable @Positive(message="Id должен быть больше 0") Long id){
+		WorkspaceResponseDto workspace = workspacesService.getByIdWorkspace(id);
+		return ResponseEntity.ok().body(workspace);
+	}
+
+	@DeleteMapping("/{id}")
+	public ResponseEntity<Void> getDeleteByIdWorspace(@PathVariable Long id){
+		workspacesService.getDeleteByIdWorkspace(id);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 

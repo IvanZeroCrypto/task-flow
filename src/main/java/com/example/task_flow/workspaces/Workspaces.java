@@ -31,7 +31,7 @@ public class Workspaces {
 	private String name;
 
 	@Column(name = "owner_id" , nullable = false )
-	private Long owner_id;
+	private Long ownerId;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

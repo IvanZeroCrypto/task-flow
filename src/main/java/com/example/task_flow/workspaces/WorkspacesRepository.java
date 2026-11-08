@@ -10,8 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository 
 public interface WorkspacesRepository extends  JpaRepository<Workspaces,Long>{
 
-	@Query("SELECT w FROM Workspaces w JOIN Memberships m ON  m.workspace_id  = w.id  WHERE m.userId = :userId")
+	@Query("SELECT w FROM Workspaces w JOIN Memberships m ON  m.workspaceId  = w.id  WHERE m.userId = :userId")
 	List<Workspaces> findMyWorkspaces(@Param("userId") Long userId);
+
 
 }
 

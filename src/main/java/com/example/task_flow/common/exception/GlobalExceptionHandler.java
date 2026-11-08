@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -47,6 +48,23 @@ public class GlobalExceptionHandler{
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
     }
+
+    //  @ExceptionHandler(ConstraintViolationException.class)
+    // public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(ConstraintViolationException ex) {
+        
+    //     String errorMessage = ex.getConstraintViolations()
+    //             .stream()
+    //             .map(violation -> violation.getMessage())
+    //             .findFirst()
+    //             .orElse("Некорректный параметр запроса");
+
+    //     ErrorResponseDTO errorDto = new ErrorResponseDTO(
+    //             HttpStatus.BAD_REQUEST.value(),
+    //             errorMessage
+    //     );
+
+    //     return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    // }
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException e){
