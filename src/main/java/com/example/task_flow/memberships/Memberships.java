@@ -32,7 +32,7 @@ public class Memberships {
 	private Long userId;
 
 	@Column(name = "workspace_id" , nullable = false )
-	private Long workspace_id;
+	private Long workspaceId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false,length = 10)

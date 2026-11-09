@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.persistence.EntityNotFoundException;
+// import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -48,6 +49,23 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
     }
 
+    //  @ExceptionHandler(ConstraintViolationException.class)
+    // public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(ConstraintViolationException ex) {
+        
+    //     String errorMessage = ex.getConstraintViolations()
+    //             .stream()
+    //             .map(violation -> violation.getMessage())
+    //             .findFirst()
+    //             .orElse("Некорректный параметр запроса");
+
+    //     ErrorResponseDTO errorDto = new ErrorResponseDTO(
+    //             HttpStatus.BAD_REQUEST.value(),
+    //             errorMessage
+    //     );
+
+    //     return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    // }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException e){
         log.error("handleUnauthorized",e);
@@ -60,13 +78,10 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDto);
     }
 
-
-	@ExceptionHandler(EmailAlreadyExistsException.class)
-	public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExists(EmailAlreadyExistsException e){
-	    log.error("Handle exist email",e);
-
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ErrorResponseDTO> handleConflictException(ConflictException e){
 	    var errorDto = new ErrorResponseDTO(
-	    	"email if existing",
+	    	"is conflict",
 	    	e.getMessage(),
 	    	LocalDateTime.now()
 	  	    );
@@ -104,6 +119,17 @@ public class GlobalExceptionHandler{
           LocalDateTime.now()
 		);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleExceptionForbidden(Exception e) {
+        log.error("handleExceptionForbidden",e);
+        var errorDto = new ErrorResponseDTO(
+          "Доступ закрыт",
+          e.getMessage(),
+          LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorDto);
     }
 
    @ExceptionHandler(MethodArgumentNotValidException.class)
