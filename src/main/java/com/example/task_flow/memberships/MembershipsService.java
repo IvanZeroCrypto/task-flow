@@ -16,25 +16,24 @@ public class MembershipsService{
 
 	public void checkOwner(Long userId,Long workspaceId){
 		Memberships m = membershipsRepository.findByUserIdAndWorkspaceId(userId,workspaceId)
-		.orElseThrow(() -> new AccessDeniedException("Нет данных(member)"));
-		if(m.getRole() != Role.MEMBER){
-			new AccessDeniedException("Нет доступа вы не владелец");
+		.orElseThrow(() -> new AccessDeniedException("Нет доступа вы не владелец"));
+		if(m.getRole() != Role.OWNER){
+			throw new AccessDeniedException("Нет доступа вы не владелец");
 		}
 	}
 
-	public void checkMember(Long userId,Long workspaceId){
+	public boolean checkMember(Long userId,Long workspaceId){
 		boolean exists = membershipsRepository.existsByUserIdAndWorkspaceId(userId, workspaceId);
-		if(!exists){
-			new AccessDeniedException("Нет доступа вы не участник");
-		} 	
+		return exists;
 	}
 
-	public void addMember(Long userId,Long workspaceId,Role role){
+	public Memberships addMember(Long userId,Long workspaceId,Role role){
 		Memberships memberships = new Memberships();
 		memberships.setUserId(userId);
 		memberships.setWorkspaceId(workspaceId);
 		memberships.setRole(role);
 
-		membershipsRepository.save(memberships);
+    	Memberships savedMember = membershipsRepository.save(memberships);
+    	return savedMember;
 	}
 }

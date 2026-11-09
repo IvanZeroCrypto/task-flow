@@ -12,7 +12,7 @@ import com.example.task_flow.auth.dto.AuthLoginDto;
 import com.example.task_flow.auth.dto.AuthRegisterDto;
 import com.example.task_flow.auth.dto.AuthRegisterResponse;
 import com.example.task_flow.auth.dto.AuthTokensDto;
-import com.example.task_flow.common.exception.EmailAlreadyExistsException;
+import com.example.task_flow.common.exception.ConflictException;
 import com.example.task_flow.common.exception.TokenValidationException;
 import com.example.task_flow.infrastructure.redis.RedisService;
 import com.example.task_flow.security.JwtService;
@@ -44,7 +44,7 @@ public class AuthService{
 
 	public AuthRegisterResponse register(AuthRegisterDto request){
 		if(repository.existsByEmail(request.email())){
-			throw new EmailAlreadyExistsException(request.email());
+			throw new ConflictException("conflict registration:");
 		}
 
 		User user = new User();

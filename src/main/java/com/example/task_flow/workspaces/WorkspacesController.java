@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.task_flow.common.dto.MemberDto;
+import com.example.task_flow.workspaces.dto.EmailRequestDto;
 import com.example.task_flow.workspaces.dto.WorkSpaceRequestDto;
 import com.example.task_flow.workspaces.dto.WorkspaceResponseDto;
 
@@ -56,10 +58,15 @@ public class WorkspacesController{
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> getDeleteByIdWorspace(@PathVariable Long id){
-		workspacesService.getDeleteByIdWorkspace(id);
+	public ResponseEntity<Void> deleteByIdWorspace(@PathVariable Long id){
+		workspacesService.deleteByIdWorkspace(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
+	@PostMapping("/{id}/members")
+	public ResponseEntity<MemberDto> addUserWorkspace(@PathVariable Long id,@RequestBody EmailRequestDto request){
+		MemberDto member = workspacesService.addUserWorkspace(id,request.email());
+		return ResponseEntity.ok().body(member);
+	}
 
 }

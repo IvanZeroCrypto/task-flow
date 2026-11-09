@@ -45,9 +45,9 @@ public class JwtAuthenticationFilter extends  OncePerRequestFilter{
     String accessToken = authHeader.substring(7);
     try {
     	    // jwtService.isTokenValid(accessToken);
-    		log.info("accessToken success validate");
 
             Claims claims = jwtService.extractAllClaims(accessToken);
+            log.info("accessToken success validate");
 
             if(redisService.isBlacklisted(claims.getId())){
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

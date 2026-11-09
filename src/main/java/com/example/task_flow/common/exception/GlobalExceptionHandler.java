@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
+// import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -78,13 +78,10 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDto);
     }
 
-
-	@ExceptionHandler(EmailAlreadyExistsException.class)
-	public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExists(EmailAlreadyExistsException e){
-	    log.error("Handle exist email",e);
-
+	@ExceptionHandler(ConflictException.class)
+	public ResponseEntity<ErrorResponseDTO> handleConflictException(ConflictException e){
 	    var errorDto = new ErrorResponseDTO(
-	    	"email if existing",
+	    	"is conflict",
 	    	e.getMessage(),
 	    	LocalDateTime.now()
 	  	    );
@@ -122,6 +119,17 @@ public class GlobalExceptionHandler{
           LocalDateTime.now()
 		);
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleExceptionForbidden(Exception e) {
+        log.error("handleExceptionForbidden",e);
+        var errorDto = new ErrorResponseDTO(
+          "Доступ закрыт",
+          e.getMessage(),
+          LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorDto);
     }
 
    @ExceptionHandler(MethodArgumentNotValidException.class)
