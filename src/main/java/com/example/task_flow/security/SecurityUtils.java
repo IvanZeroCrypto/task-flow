@@ -20,6 +20,8 @@ public final class SecurityUtils{
         return getRequiredUser().getUserId();
    }
 
+   
+
    public static String getRequiredUserEmail() {
         return getRequiredUser().getEmail();
     }

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +21,11 @@ import com.example.task_flow.workspaces.dto.WorkSpaceRequestDto;
 import com.example.task_flow.workspaces.dto.WorkspaceResponseDto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 @RestController 
+@Validated
 @RequestMapping("/api/workspaces")
 public class WorkspacesController{
 	
@@ -52,19 +55,19 @@ public class WorkspacesController{
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<WorkspaceResponseDto> getByIdWorspace(@PathVariable @Positive(message="Id должен быть больше 0") Long id){
+	public ResponseEntity<WorkspaceResponseDto> getByIdWorspace(@PathVariable @Positive(message="Id должен быть больше 0") @NotNull (message = "Id не должен быть пустым") Long id){
 		WorkspaceResponseDto workspace = workspacesService.getByIdWorkspace(id);
 		return ResponseEntity.ok().body(workspace);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteByIdWorspace(@PathVariable Long id){
+	public ResponseEntity<Void> deleteByIdWorspace(@PathVariable @Positive(message="Id должен быть больше 0") @NotNull (message = "Id не должен быть пустым") Long id){
 		workspacesService.deleteByIdWorkspace(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 
 	@PostMapping("/{id}/members")
-	public ResponseEntity<MemberDto> addUserWorkspace(@PathVariable Long id,@RequestBody EmailRequestDto request){
+	public ResponseEntity<MemberDto> addUserWorkspace(@PathVariable @Positive(message="Id должен быть больше 0") @NotNull (message = "Id не должен быть пустым") Long id,@RequestBody EmailRequestDto request){
 		MemberDto member = workspacesService.addUserWorkspace(id,request.email());
 		return ResponseEntity.ok().body(member);
 	}

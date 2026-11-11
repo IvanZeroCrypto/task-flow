@@ -96,7 +96,7 @@ public class WorkspacesService{
 
     	Memberships result = membershipsService.addMember(user.id(), workspaceId, Role.MEMBER);
 
-    	return new MemberDto(result.getId(),user.id(),user.nickname(),result.getRole());
+    	return new MemberDto(user.id(),user.nickname(),result.getRole());
     }
 	
 }
