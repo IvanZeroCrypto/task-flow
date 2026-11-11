@@ -12,13 +12,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import jakarta.persistence.EntityNotFoundException;
-// import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -38,6 +40,13 @@ public class GlobalExceptionHandler{
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
 	}
 
+    @ExceptionHandler(RequestRejectedException.class)
+    public ResponseEntity<String> handleRequestRejected(RequestRejectedException ex) {
+        log.error("Некорректный URL: проверьте, что все обязательные сегменты пути заполнены");
+        return ResponseEntity.badRequest()
+                .body("Некорректный URL: проверьте, что все обязательные сегменты пути заполнены (например, отсутствует ID рабочей области).");
+    }
+
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<ErrorResponseDTO> handleDataAccessException(DataAccessException e){
 
@@ -49,22 +58,22 @@ public class GlobalExceptionHandler{
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDto);
     }
 
-    //  @ExceptionHandler(ConstraintViolationException.class)
-    // public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(ConstraintViolationException ex) {
+     @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(ConstraintViolationException ex) {
         
-    //     String errorMessage = ex.getConstraintViolations()
-    //             .stream()
-    //             .map(violation -> violation.getMessage())
-    //             .findFirst()
-    //             .orElse("Некорректный параметр запроса");
-
-    //     ErrorResponseDTO errorDto = new ErrorResponseDTO(
-    //             HttpStatus.BAD_REQUEST.value(),
-    //             errorMessage
-    //     );
-
-    //     return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
-    // }
+        String errorMessage = ex.getConstraintViolations()
+                .stream()
+                .map(violation -> violation.getMessage())
+                .findFirst()
+                .orElse("Некорректный параметр запроса");
+        var errorDto = new ErrorResponseDTO(
+          "Ошибка невалидные данные:",
+          ex.getMessage(),
+          LocalDateTime.now()
+        );
+     
+        return new ResponseEntity<>(errorDto, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDTO> handleUnauthorized(UnauthorizedException e){
@@ -145,6 +154,22 @@ public class GlobalExceptionHandler{
     
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> handleTypeMismatch(
+        MethodArgumentTypeMismatchException ex) {
+    String fieldName = ex.getName();
+    Object value = ex.getValue();
+    String message = String.format(
+        "Параметр '%s' имеет неверный формат: '%s' не является допустимым числом", 
+        fieldName, value
+    );
+    return ResponseEntity.badRequest().body(Map.of(
+        "status", 400,
+        "error", "Bad Request",
+        "message", message
+    ));
+}
 
 
 @ExceptionHandler(HttpMessageNotReadableException.class)

@@ -17,4 +17,9 @@ public class UserService{
 		User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		return new UserDomain(user.getId(),user.getNickname(),user.getEmail(),user.getCreatedAt());
 	}
+	public UserDomain findUserById(Long userId){
+		User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+		return new UserDomain(user.getId(),user.getNickname(),user.getEmail(),user.getCreatedAt());
+	}
+
 }
