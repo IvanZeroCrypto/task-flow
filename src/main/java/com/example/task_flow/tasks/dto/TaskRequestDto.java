@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Size;
 
 public record TaskRequestDto(
 	@NotBlank (message = "title не может быть пустым")
-    @Size (min = 3, max = 100, message = "Длинна title  не может быть меньше 3 и больше 100")
+    @Size (min = 3, max = 250, message = "Длинна title  не может быть меньше 3 и больше 250")
 	String title
 ){}
