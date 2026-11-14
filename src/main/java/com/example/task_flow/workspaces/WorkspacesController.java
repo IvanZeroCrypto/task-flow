@@ -49,8 +49,8 @@ public class WorkspacesController{
 	}
 
 	@GetMapping
-	public ResponseEntity<List<WorkspaceResponseDto>> getAllMyWorkspaces(){
-		List<WorkspaceResponseDto> workspaces = workspacesService.getAllMyWorkspaces();
+	public ResponseEntity<List<WorkspaceResponseDto>> getAllWorkspaces(){
+		List<WorkspaceResponseDto> workspaces = workspacesService.getAllWorkspaces();
 		return ResponseEntity.ok().body(workspaces);
 	}
 

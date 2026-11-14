@@ -7,12 +7,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.task_flow.common.dto.MemberDto;
+import com.example.task_flow.memberships.dto.RequestUpdateWorkspaceMemberRole;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -44,16 +48,16 @@ public class MembershipsController{
 	  return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
-	// @PatchMapping ("/{targetUserId}")
-	// public ResponseEntity<MemberDto> updateWorkspaceMemberRole(
-	// 	 @PathVariable @Positive(message = "workspaceId должен быть больше 0") 
-    //      @NotNull(message = "workspaceId не должен быть пустым") Long workspaceId,
+	@PatchMapping ("/{targetUserId}")
+	public ResponseEntity<MemberDto> updateWorkspaceMemberRole(
+		 @PathVariable @Positive(message = "workspaceId должен быть больше 0") 
+         @NotNull(message = "workspaceId не должен быть пустым") Long workspaceId,
             
-    //      @PathVariable @Positive(message = "targetUserId должен быть больше 0") 
-    //      @NotNull(message = "targetUserId не должен быть пустым") Long targetUserId,
-    //      @RequestBody @Valid RequestUpdateWorkspaceMemberRole request
-	// ){
-	//   MemberDto result =  membershipsService.updateWorkspaceMemberRole(workspaceId,targetUserId,request.role());
-	//   return ResponseEntity.status(HttpStatus.OK).body(result);
-	// }
+         @PathVariable @Positive(message = "targetUserId должен быть больше 0") 
+         @NotNull(message = "targetUserId не должен быть пустым") Long targetUserId,
+         @RequestBody @Valid RequestUpdateWorkspaceMemberRole request
+	){
+	  MemberDto result =  membershipsService.updateWorkspaceMemberRole(workspaceId,targetUserId,request.role());
+	  return ResponseEntity.status(HttpStatus.OK).body(result);
+	}
 }

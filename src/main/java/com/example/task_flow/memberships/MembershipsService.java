@@ -8,7 +8,6 @@ import com.example.task_flow.common.dto.MemberDto;
 import com.example.task_flow.common.enums.Role;
 import com.example.task_flow.common.exception.AccessDeniedException;
 import com.example.task_flow.security.SecurityUtils;
-import com.example.task_flow.user.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -17,12 +16,10 @@ import jakarta.transaction.Transactional;
 public class MembershipsService{
 
 	private final MembershipsRepository membershipsRepository;
-	// private final UserService userService;
 
 
-	public MembershipsService(MembershipsRepository membershipsRepository,UserService userService){
+	public MembershipsService(MembershipsRepository membershipsRepository){
 		this.membershipsRepository = membershipsRepository;
-		// this.userService = userService;
 	}
 
 	public Memberships checkOwner(Long userId,Long workspaceId){
@@ -88,37 +85,49 @@ public class MembershipsService{
         membershipsRepository.deleteByUserId(targetUserId);
 	}
 	
-	// @Transactional 
-	// public MemberDto updateWorkspaceMemberRole(Long workspaceId,Long targetUserId,Role role){
-	// 	Long userId = SecurityUtils.getRequiredUserId();
+	@Transactional 
+	public MemberDto updateWorkspaceMemberRole(Long workspaceId,Long targetUserId,Role role){
+		Long userId = SecurityUtils.getRequiredUserId();
 
-	//      checkOwner(userId,workspaceId);
-   //      boolean isMember = checkMember(targetUserId, workspaceId);
-   //      if(!isMember){
-   //      	throw new EntityNotFoundException("Not found member");
-   //      }
+		if(targetUserId.equals(userId)){
+			throw new AccessDeniedException("Нет доступа нельзя сменить роль у самого себя");
+		}
 
-   //      Memberships m = membershipsRepository.findByUserIdAndWorkspaceId(targetUserId,workspaceId)
-   //      .orElseThrow(() -> new EntityNotFoundException("not found entity workspaces"));
+		if(role == Role.OWNER){
+			throw new AccessDeniedException("Нет доступа нельзя сменить роль владельца ");
+		}
 
-   //      if(role != Role.OWNER){
-   //      	m.setRole(role);
-   //       Memberships savedMember = 	membershipsRepository.save(m);
-   //      	UserDomain user = userService.findUserById(userId);
-   //      	return new MemberDto(user.id(),user.nickname(),savedMember.getRole());
+        boolean isMember = checkMember(targetUserId, workspaceId);
+        if(!isMember){
+        	throw new EntityNotFoundException("Not found member");
+        }
 
-   //      }else{
-   //      	m.setRole(role);
-   //      	membershipsRepository.save(m);
+        if(!checkAdmin(userId, workspaceId)){
+        	checkOwner(userId, workspaceId);
 
-   //      	Memberships oldwnerUser = membershipsRepository.findByUserIdAndWorkspaceId(userId,workspaceId)
-   //         .orElseThrow(() -> new EntityNotFoundException("not found entity workspaces"));
+        	Memberships m = membershipsRepository.findByUserIdAndWorkspaceId(targetUserId,workspaceId)
+		    .orElseThrow(() -> new EntityNotFoundException("not found entity workspaces"));
 
-   //          oldwnerUser.setRole(Role.ADMIN);
-   //       Memberships savedMember = 	membershipsRepository.save(oldwnerUser);
-   //      	UserDomain user = userService.findUserById(targetUserId);
-   //      	return new MemberDto(user.id(),user.nickname(),savedMember.getRole());
-   //      }
-       
-	// }
+		    m.setRole(role);
+		    membershipsRepository.save(m);
+
+		    MemberDto memberUser = membershipsRepository.getWorkspaceUser(targetUserId, workspaceId).
+		    orElseThrow(() ->  new EntityNotFoundException("member user not found"));
+
+		    return memberUser;
+
+        }else{
+        	Memberships m = membershipsRepository.findByUserIdAndWorkspaceId(targetUserId,workspaceId)
+		    .orElseThrow(() -> new EntityNotFoundException("not found entity workspaces"));
+		    m.setRole(role);
+
+		    membershipsRepository.save(m);
+
+		    MemberDto memberUser = membershipsRepository.getWorkspaceUser(targetUserId, workspaceId).
+		    orElseThrow(() ->  new EntityNotFoundException("member user not found"));
+
+		    return memberUser;
+        }
+   }
 }
+

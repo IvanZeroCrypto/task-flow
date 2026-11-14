@@ -1,5 +1,6 @@
 package com.example.task_flow.common.exception;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 
 
@@ -171,18 +173,39 @@ public class GlobalExceptionHandler{
     ));
 }
 
-
 @ExceptionHandler(HttpMessageNotReadableException.class)
-public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+public ResponseEntity<Map<String, Object>> handleHttpMessageNotReadableException(
+        HttpMessageNotReadableException ex) {
+
     Map<String, Object> body = new LinkedHashMap<>();
     body.put("timestamp", LocalDateTime.now().toString());
-    body.put("status", HttpStatus.BAD_REQUEST.value()); // 400
+    body.put("status", HttpStatus.BAD_REQUEST.value());
+
+    Throwable cause = ex.getCause();
+
+    if (cause instanceof InvalidFormatException invalidFormat
+            && invalidFormat.getTargetType() != null
+            && invalidFormat.getTargetType().isEnum()) {
+
+        String fieldName = invalidFormat.getPath().isEmpty()
+                ? "unknown"
+                : invalidFormat.getPath().get(0).getPropertyName();
+        Object invalidValue = invalidFormat.getValue();
+        String allowed = Arrays.toString(invalidFormat.getTargetType().getEnumConstants());
+
+        body.put("error", "Invalid enum value");
+        body.put("message", String.format(
+                "Недопустимое значение '%s' для поля '%s'. Допустимые значения: %s",
+                invalidValue, fieldName, allowed));
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    // синтаксически битый JSON
     body.put("error", "Malformed JSON");
     body.put("message", "Некорректный синтаксис JSON запроса. Проверьте закрывающие скобки, запятые и кавычки.");
-  
-    return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(body);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
 }
 }
 

@@ -56,10 +56,10 @@ public class WorkspacesService{
 		return new WorkspaceResponseDto(workspaces.getId(),workspaces.getName(),workspaces.getOwnerId(),workspaces.getCreatedAt());
 	}
 
-    public List<WorkspaceResponseDto> getAllMyWorkspaces(){
+    public List<WorkspaceResponseDto> getAllWorkspaces(){
 		Long userId = SecurityUtils.getRequiredUserId();
 
-    	List<Workspaces> workspaces = workspacesRepository.findMyWorkspaces(userId);
+    	List<Workspaces> workspaces = workspacesRepository.findWorkspaces(userId);
     	return workspaces.stream().map(w -> new WorkspaceResponseDto(w.getId(),w.getName(),w.getOwnerId(),w.getCreatedAt())).toList();
     }
 
