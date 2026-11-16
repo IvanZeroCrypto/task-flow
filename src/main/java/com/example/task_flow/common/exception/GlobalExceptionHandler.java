@@ -63,11 +63,11 @@ public class GlobalExceptionHandler{
      @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(ConstraintViolationException ex) {
         
-        String errorMessage = ex.getConstraintViolations()
-                .stream()
-                .map(violation -> violation.getMessage())
-                .findFirst()
-                .orElse("Некорректный параметр запроса");
+        // String errorMessage = ex.getConstraintViolations()
+        //         .stream()
+        //         .map(violation -> violation.getMessage())
+        //         .findFirst()
+        //         .orElse("Некорректный параметр запроса");
         var errorDto = new ErrorResponseDTO(
           "Ошибка невалидные данные:",
           ex.getMessage(),
@@ -113,7 +113,6 @@ public class GlobalExceptionHandler{
 
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ErrorResponseDTO> handleEntityNotFound(EntityNotFoundException e){
-		log.error("Handle EntityNotFoundException",e);
 		var errorDto = new ErrorResponseDTO(
           "Entity not found",
           e.getMessage(),
@@ -123,9 +122,8 @@ public class GlobalExceptionHandler{
 	}
 	@ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<ErrorResponseDTO> handleBadCredentials(Exception e) {
-        log.error("Handle EntityNotFoundException",e);
 		var errorDto = new ErrorResponseDTO(
-          "Entity not found",
+          "",
           e.getMessage(),
           LocalDateTime.now()
 		);
