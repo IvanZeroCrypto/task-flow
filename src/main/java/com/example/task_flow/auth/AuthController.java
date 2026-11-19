@@ -111,11 +111,7 @@ public class AuthController{
 
 	     return ResponseEntity.status(HttpStatus.OK).build();
 	}
-	@PostMapping("/testes")
-	public ResponseEntity<String> tester(){
-		log.info("called register tester");
-		return ResponseEntity.ok().body("Вызвался testing endpoint");
-	}
+	
 
 
 }
