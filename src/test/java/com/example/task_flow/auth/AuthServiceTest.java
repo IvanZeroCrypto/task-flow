@@ -233,6 +233,20 @@ public class AuthServiceTest{
          verifyNoInteractions(redisService);
          verifyNoInteractions(passwordEncoder);
      }
+
+    @Test
+    @DisplayName("Логин: ошибка сгенерирован пустой accesstoken")
+    void login_jwtServiceReturnEmptyAccessToken() {
+        givenSuccessfulLogin();
+        when(jwtService.generateAccessToken(1L, "test@mail.com")).thenReturn("");
+
+        assertThatThrownBy(() -> authService.login(request)).
+         isInstanceOf(IllegalStateException.class).
+         hasMessageContaining("error generate access-refresh tokens");
+
+        verifyNoInteractions(redisService);
+    }
+
     }
 
     @Nested
