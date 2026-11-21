@@ -71,6 +71,10 @@ public class AuthService{
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
         String refreshToken = UUID.randomUUID().toString();
 
+        if(accessToken.length() == 0 || refreshToken.length() == 0) {
+        	throw new IllegalStateException("error generate access-refresh tokens");
+        }
+
         redisService.saveRefreshToken(refreshToken,String.valueOf(user.getId()));
 
 		return new AuthTokensDto(accessToken,refreshToken);

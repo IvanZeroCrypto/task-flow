@@ -48,7 +48,7 @@ public class AuthController{
 	public ResponseEntity<AuthAccessTokenResponse> login(@RequestBody @Valid AuthLoginDto dto , HttpServletResponse response ){
 	  AuthTokensDto tokens  = authService.login(dto);
 
-	  Cookie refreshTokenCookie = new Cookie("refresToken", tokens.refreshToken());
+	  Cookie refreshTokenCookie = new Cookie("refreshToken", tokens.refreshToken());
 
 	  refreshTokenCookie.setHttpOnly(true);
 	  refreshTokenCookie.setSecure(true);
@@ -62,7 +62,7 @@ public class AuthController{
 
     @PostMapping("/refresh")
 	public ResponseEntity<AuthAccessTokenResponse> refresh(
-		@CookieValue(name = "refresToken",required = false) String refreshToken,
+		@CookieValue(name = "refreshToken",required = false) String refreshToken,
 		HttpServletResponse response 
 	){
 
@@ -73,7 +73,7 @@ public class AuthController{
 		 AuthTokensDto result  = authService.refresh(refreshToken);
 
 		 if(result.refreshToken() != null){
-		 	Cookie refreshTokenCookie = new Cookie("refresToken", result.refreshToken());
+		 	Cookie refreshTokenCookie = new Cookie("refreshToken", result.refreshToken());
 
 	        refreshTokenCookie.setHttpOnly(true);
 	        refreshTokenCookie.setSecure(true);
@@ -88,7 +88,7 @@ public class AuthController{
 
     @PostMapping("/logout")
 	public ResponseEntity<Void> logout(
-		@CookieValue(name = "refresToken",required = false) String refreshToken	,
+		@CookieValue(name = "refreshToken",required = false) String refreshToken	,
 		HttpServletResponse response,
 		Authentication authentication
 	){
@@ -101,7 +101,7 @@ public class AuthController{
          Date expiration = details.getExpiration();
          authService.logout(jti, expiration,refreshToken);
 
-		 Cookie refreshTokenCookie = new Cookie("refresToken",null);
+		 Cookie refreshTokenCookie = new Cookie("refreshToken",null);
 
          refreshTokenCookie.setHttpOnly(true);
 	     refreshTokenCookie.setSecure(true);
