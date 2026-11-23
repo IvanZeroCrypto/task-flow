@@ -6,10 +6,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import java.util.Date;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,12 +24,10 @@ import com.example.task_flow.auth.dto.AuthTokensDto;
 import com.example.task_flow.common.exception.ConflictException;
 import com.example.task_flow.common.exception.TokenValidationException;
 import com.example.task_flow.infrastructure.redis.RedisService;
-import com.example.task_flow.security.JwtDetails;
 import com.example.task_flow.security.JwtService;
 
 import jakarta.servlet.http.Cookie;
 import tools.jackson.databind.json.JsonMapper;
-
 
 @WebMvcTest(controllers = AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)

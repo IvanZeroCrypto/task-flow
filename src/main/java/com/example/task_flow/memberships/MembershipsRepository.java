@@ -32,6 +32,10 @@ public interface MembershipsRepository extends JpaRepository<Memberships,Long>{
 	ON u.id = m.userId WHERE m.workspaceId = :workspaceId AND u.id = :userId
 	"""
 	)
-    Optional<MemberDto> getWorkspaceUser(@Param("workspaceId") Long userId,Long workspaceId);
+	
+    Optional<MemberDto> getWorkspaceUser(
+    @Param("workspaceId") Long workspaceId,
+    @Param("userId") Long userId
+   );
 }
 
