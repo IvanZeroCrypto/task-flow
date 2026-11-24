@@ -3,21 +3,16 @@ package com.example.task_flow.workspaces;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Optional;
 
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService.Work;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
-import com.example.task_flow.common.dto.MemberDto;
 import com.example.task_flow.common.enums.Role;
 import com.example.task_flow.memberships.Memberships;
-import com.example.task_flow.memberships.MembershipsRepository;
 import com.example.task_flow.user.User;
-import com.example.task_flow.workspaces.Workspaces;
 
 @DataJpaTest 
 public class WorkspacesRepositoryTest{
