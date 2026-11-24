@@ -48,25 +48,25 @@ public class WorkspacesRepositoryTest{
         return em.persist(m);
     }
 
-    // @Test 
-    // @DisplayName("успешное получение всех workspace где находится пользователь")
-    // void getMyWorkspace(){
-    // 	User alice  = persistUser("alice");
+    @Test 
+    @DisplayName("успешное получение всех workspace где находится пользователь")
+    void getMyWorkspace(){
+    	User alice  = persistUser("alice");
 
-    // 	Workspaces w1 = persistWorkspace("Team 1", alice.getId());
-    // 	Workspaces w2 = persistWorkspace("Team 2", alice.getId());
+    	Workspaces w1 = persistWorkspace("Team 1", alice.getId());
+    	Workspaces w2 = persistWorkspace("Team 2", alice.getId());
 
-    // 	persistMembership(alice.getId(), w1.getId(), Role.OWNER);
-	// 	persistMembership(alice.getId(), w2.getId(), Role.MEMBER);
+    	persistMembership(alice.getId(), w1.getId(), Role.OWNER);
+		persistMembership(alice.getId(), w2.getId(), Role.MEMBER);
 
-	// 	em.flush();
+		em.flush();
 
-	// 	List<Workspaces> results = repo.findWorkspaces(alice.getId());
+		List<Workspaces> results = repo.findWorkspaces(alice.getId());
 
-	// 	assertThat(results).hasSize(2)
-    //         .extracting(dto -> dto.getId())
-    //         .containsExactlyInAnyOrder(w1.getId(),w2.getId());
-    // }
+		assertThat(results).hasSize(2)
+            .extracting(dto -> dto.getId())
+            .containsExactlyInAnyOrder(w1.getId(),w2.getId());
+    }
 
     @Test 
     @DisplayName("пустой список групп пользователя")
